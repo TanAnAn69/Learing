@@ -1,0 +1,31 @@
+pipeline {
+    agent {
+    label 'KEIL'
+  }
+
+    environment {
+            APP_NAME = 'YanmadeKeilBuild'
+            HEX_FILE = 'stm32f4_bootloader_v1.2'
+            BUILD_HEX_CMD = "${APP_NAME} --output-file-name=${HEX_FILE} --proj-path=${WORKSPACE}"
+        }
+
+
+    stages {
+            stage('build') {
+            steps {
+                bat "${BUILD_HEX_CMD}"
+            }
+        }
+    }
+    post {
+            always {
+                emailext(
+                    subject: '构建通知：${PROJECT_NAME} - Build # ${BUILD_NUMBER} - ${BUILD_STATUS}!',
+                    body: '${FILE,path="email.html"}',
+                    to: 'kangyashuai@yanmade.com',
+                    attachmentsPattern: '*.hex, *.bin' )
+            }
+        }
+
+}
+
